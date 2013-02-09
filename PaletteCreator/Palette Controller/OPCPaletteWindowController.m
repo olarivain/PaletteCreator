@@ -16,6 +16,7 @@
 @property (weak) IBOutlet NSTextField *pathField;
 @property (weak) IBOutlet NSTextField *paletteNameField;
 @property (weak) IBOutlet NSTextField *errorLabel;
+@property (weak) IBOutlet NSTextField *successLabel;
 @property (weak) IBOutlet NSProgressIndicator *progressIndicator;
 @property (weak) IBOutlet NSButton *generateButton;
 
@@ -56,6 +57,7 @@
 }
 
 - (IBAction)generatePalette:(id)sender {
+	self.successLabel.stringValue = @"";
 	if(self.plistPath == nil) {
 		self.errorLabel.stringValue = @"Select a plist containing colors.";
 		return;
@@ -94,27 +96,34 @@
 	NSDictionary *configuration = [NSDictionary dictionaryWithContentsOfFile: configurationPath];
 	
 	// go through all keys and look for colors
-	for(NSString *key in configuration.allKeys) {
-		NSString *value =[configuration objectForKey: key];
-		if (![value isKindOfClass: NSString.class] || ![value hasPrefix: @"0x"]) {
-			continue;
+	NSArray *colors = [configuration objectForKey: @"Colors"];
+	for(NSDictionary *color in colors) {
+		for(NSString *key in color.allKeys) {
+			NSString *value =[color objectForKey: key];
+			if (![value isKindOfClass: NSString.class] || ![value hasPrefix: @"0x"]) {
+				continue;
+			}
+			
+			NSInteger hex = [value integerFromHexaValue];
+			NSUInteger red = (hex & 0xFF0000) >> 16;
+			NSUInteger green = (hex & 0x00FF00) >> 8;
+			NSUInteger blue = (hex & 0x0000FF);
+			NSColor *color = [NSColor colorWithDeviceRed: red / 255.0f
+												   green: green / 255.0f
+													blue: blue / 255.0f
+												   alpha: 1.0f];
+			[colorList setColor: color forKey: key];
 		}
-		
-		NSInteger hex = [value integerFromHexaValue];
-		NSUInteger red = (hex & 0xFF0000) >> 16;
-		NSUInteger green = (hex & 0x00FF00) >> 8;
-		NSUInteger blue = (hex & 0x0000FF);
-		NSColor *color = [NSColor colorWithDeviceRed: red / 255.0f
-											   green: green / 255.0f
-												blue: blue / 255.0f
-											   alpha: 1.0f];
-		[colorList setColor: color forKey: key];
 	}
 	
 	NSString *paletteTargetPath = [NSString stringWithFormat: @"~/%@.clr", name];
 	paletteTargetPath = [paletteTargetPath stringByExpandingTildeInPath];
 	BOOL saved = [colorList writeToFile: nil];
-	DDLogInfo(@"Saved: %i", saved);
+	if(saved) {
+		self.successLabel.stringValue = [NSString stringWithFormat: @"Saved palette %@", name];
+	} else {
+		self.errorLabel.stringValue = [NSString stringWithFormat: @"Couldn't save palette %@", name];
+	}
 
 	
 	OTFVoidBlock completion = ^{
