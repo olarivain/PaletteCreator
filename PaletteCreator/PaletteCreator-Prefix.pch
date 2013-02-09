@@ -1,0 +1,10 @@
+//
+// Prefix header for all source files of the 'PaletteCreator' target in the 'PaletteCreator' project
+//
+
+#ifdef __OBJC__
+	#import <Cocoa/Cocoa.h>
+	#import <CocoaLumberJack/DDLog.h>
+
+	#import <OTFoundation/OTFoundation-Pod-Prefix.h>
+#endif
