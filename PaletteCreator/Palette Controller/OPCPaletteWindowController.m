@@ -96,6 +96,7 @@
 	NSDictionary *configuration = [NSDictionary dictionaryWithContentsOfFile: configurationPath];
 	
 	// go through all keys and look for colors
+	NSColorSpace *colorSpace = [NSColorSpace genericRGBColorSpace];
 	NSArray *colors = [configuration objectForKey: @"Colors"];
 	for(NSDictionary *color in colors) {
 		for(NSString *key in color.allKeys) {
@@ -103,15 +104,16 @@
 			if (![value isKindOfClass: NSString.class] || ![value hasPrefix: @"0x"]) {
 				continue;
 			}
-			
+
 			NSInteger hex = [value integerFromHexaValue];
-			NSUInteger red = (hex & 0xFF0000) >> 16;
-			NSUInteger green = (hex & 0x00FF00) >> 8;
-			NSUInteger blue = (hex & 0x0000FF);
-			NSColor *color = [NSColor colorWithDeviceRed: red / 255.0f
-												   green: green / 255.0f
-													blue: blue / 255.0f
-												   alpha: 1.0f];
+			CGFloat red = ((float) ((hex & 0xFF0000) >> 16)) / 255.0f;
+			CGFloat green = ((float) ((hex & 0x00FF00) >> 8)) / 255.0f;
+			CGFloat blue = ((float) (hex & 0x0000FF)) / 255.0f;
+			CGFloat colors[4] = {red, green, blue, 1.0f};
+			NSColor *color = [NSColor colorWithColorSpace:colorSpace
+											   components: colors
+													count: 4];
+
 			[colorList setColor: color forKey: key];
 		}
 	}
