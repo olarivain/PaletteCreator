@@ -101,7 +101,7 @@
 	for(NSDictionary *color in colors) {
 		for(NSString *key in color.allKeys) {
 			NSString *value =[color objectForKey: key];
-			if (![value isKindOfClass: NSString.class] || ![value hasPrefix: @"0x"]) {
+			if (![value isKindOfClass: NSString.class] || ![[value lowercaseString] hasPrefix: @"0x"]) {
 				continue;
 			}
 
