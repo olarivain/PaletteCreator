@@ -114,7 +114,8 @@
 											   components: colors
 													count: 4];
 
-			[colorList setColor: color forKey: key];
+			NSString *formattedKey = [NSString stringWithFormat:@"%@ (%@)", key, value];
+			[colorList setColor: color forKey: formattedKey];
 		}
 	}
 	
